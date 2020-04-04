@@ -1,0 +1,18 @@
+FROM python:3.7-alpine
+MAINTAINER MF Tech
+
+ENV PYTHONUNBUFFERED 1
+
+COPY ./requirements.txt /requirements.txt
+RUN pip install -r /requirements.txt
+
+# creates a directory on the docker image
+RUN mkdir /app
+# sets the directory as root
+WORKDIR /app
+# copies the local app directory to the docker image
+COPY ./app /app
+
+# creates a user who can only runs stuff on the docker image
+RUN adduser -D user
+USER user
