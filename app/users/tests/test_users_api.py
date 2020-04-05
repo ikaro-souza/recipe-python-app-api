@@ -6,7 +6,8 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 
-CREATE_USER_URL = reverse('users:create')
+USER_CREATE_URL = reverse('users:create')
+# USER_DETAILS_URL = reverse('users:details')
 USER_TOKEN_URL = reverse('users:token')
 
 
@@ -28,7 +29,7 @@ class PublicUsersApiTests(TestCase):
             'password': 'testUser123',
             'name': 'Big Docker Guy'
         }
-        response = self.client.post(CREATE_USER_URL, payload)
+        response = self.client.post(USER_CREATE_URL, payload)
         user = get_user_model().objects.get(**response.data)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -43,7 +44,7 @@ class PublicUsersApiTests(TestCase):
             'password': 'testUser123'
         }
         create_user(**payload)
-        response = self.client.post(CREATE_USER_URL, payload)
+        response = self.client.post(USER_CREATE_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -55,7 +56,7 @@ class PublicUsersApiTests(TestCase):
             'password': '123',
             'name': 'Big Docker Guy'
         }
-        response = self.client.post(CREATE_USER_URL, payload)
+        response = self.client.post(USER_CREATE_URL, payload)
         user_exists = get_user_model().objects.filter(
             email=payload['email']
         ).exists()
@@ -72,8 +73,7 @@ class PublicUsersApiTests(TestCase):
         }
         create_user(**payload)
         response = self.client.post(USER_TOKEN_URL, {
-            'email': payload['email'], 
-            'password': payload['password'],
+            'email': payload['email'], 'password': payload['password'],
         })
 
         self.assertIn('token', response.data)
