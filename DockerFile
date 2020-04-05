@@ -1,10 +1,15 @@
 FROM python:3.7-alpine
-MAINTAINER MF Tech
+LABEL maintainer="MF Tech"
 
 ENV PYTHONUNBUFFERED 1
 
 COPY ./requirements.txt /requirements.txt
+# install depencies but not caching them to keep the container as clean as possible
+RUN apk add --update --no-cache postgresql-client
+RUN apk add --update --no-cache --virtual .temp-build-deps \
+      gcc libc-dev linux-headers postgresql-dev
 RUN pip install -r /requirements.txt
+RUN apk del .temp-build-deps
 
 # creates a directory on the docker image
 RUN mkdir /app
