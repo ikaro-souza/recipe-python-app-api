@@ -7,7 +7,7 @@ from rest_framework import status
 
 
 USER_CREATE_URL = reverse('users:create')
-# USER_DETAILS_URL = reverse('users:details')
+USER_DETAILS_URL = reverse('users:details_and_update')
 USER_TOKEN_URL = reverse('users:token')
 
 
@@ -124,3 +124,57 @@ class PublicUsersApiTests(TestCase):
 
         self.assertNotIn('token', response.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_authentication_is_required_for_user_details(self):
+        """Tests if authentication is required for fetching the user details"""
+    
+        response = self.client.get(USER_DETAILS_URL)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class PrivateUsersApiTests(TestCase):
+    """Tests the users api private methods"""
+
+    def setUp(self):
+        self.user = create_user(
+            email='test@user.com',
+            password='testPass123',
+            name='Big Dock Guy'
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+    def test_access_user_details_successfull(self):
+        """Tests fetching the logged in user's detail"""
+
+        response = self.client.get(USER_DETAILS_URL)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {
+            'name': self.user.name,
+            'email': self.user.email
+        })
+
+    def test_post_to_user_details_not_allowed(self):
+        """Tests if the POST method is not allowed on the user details url"""
+
+        response = self.client.post(USER_DETAILS_URL)
+
+        self.assertEqual(
+            response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
+    def test_update_user_successfull(self):
+        """Tests if updating the user is working"""
+
+        payload = {
+            'name': 'New Big Dock Guy',
+            'password': 'testPass123'
+        }
+        response = self.client.patch(USER_DETAILS_URL, payload)
+        self.user.refresh_from_db()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.user.name, payload['name'])
+        self.assertTrue(self.user.check_password(payload['password']))
