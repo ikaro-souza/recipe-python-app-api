@@ -127,7 +127,7 @@ class PublicUsersApiTests(TestCase):
 
     def test_authentication_is_required_for_user_details(self):
         """Tests if authentication is required for fetching the user details"""
-    
+
         response = self.client.get(USER_DETAILS_URL)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
